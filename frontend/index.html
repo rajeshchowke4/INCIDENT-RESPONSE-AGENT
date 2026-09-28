@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResqOps // SRE Incident & Post-Mortem Agent (Powered by Hindsight)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            sredark: '#0B0F17',
+            srecard: '#111827',
+            sreborder: '#1F2937',
+            sreaccent: '#06B6D4',
+            sregreen: '#10B981',
+            srered: '#EF4444',
+            sreamber: '#F59E0B',
+            srepurple: '#8B5CF6'
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-sredark text-gray-200 min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- Top Navigation & Header -->
+  <header class="border-b border-sreborder bg-srecard/80 backdrop-blur sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-cyan-500/20">
+        R
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="font-bold text-lg tracking-wider text-white">ResqOps</h1>
+          <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono font-medium">HINDSIGHT-POWERED</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-800 font-mono">SRE COPILOT</span>
+        </div>
+        <p class="text-xs text-gray-400">Autonomous Incident Response & Institutional Post-Mortem Memory</p>
+      </div>
+    </div>
+
+    <!-- Live Status Indicators -->
+    <div class="flex items-center space-x-3 text-xs">
+      <div id="hindsight-status-badge" class="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-gray-800 border border-gray-700">
+        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-gray-300">Hindsight Memory: <strong id="hindsight-mode-text" class="text-emerald-400">Local Bank</strong></span>
+      </div>
+
+      <div class="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-gray-800 border border-gray-700">
+        <span class="text-gray-400">Memories Retained:</span>
+        <span id="memory-counter" class="font-mono text-cyan-400 font-bold">4 Post-Mortems</span>
+      </div>
+
+      <button id="btn-open-settings" class="px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600 transition flex items-center space-x-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <span>Cloud API Keys</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Scenario Quick Selector Bar -->
+  <section class="bg-gray-900/90 border-b border-sreborder px-6 py-2.5 flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center space-x-2 text-xs">
+      <span class="text-gray-400 font-semibold uppercase tracking-wider text-[11px] flex items-center gap-1">
+        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        Demo Scenarios:
+      </span>
+      <button class="scenario-btn px-2.5 py-1 rounded bg-gray-800 hover:bg-cyan-900/40 hover:text-cyan-300 border border-gray-700 text-gray-300 transition" data-scenario="kafka_heap_exhaustion">
+        ⚡ 1. Kafka OOM Heap
+      </button>
+      <button class="scenario-btn px-2.5 py-1 rounded bg-gray-800 hover:bg-cyan-900/40 hover:text-cyan-300 border border-gray-700 text-gray-300 transition" data-scenario="postgres_deadlock_payout">
+        🔥 2. Postgres Deadlock (503)
+      </button>
+      <button class="scenario-btn px-2.5 py-1 rounded bg-gray-800 hover:bg-cyan-900/40 hover:text-cyan-300 border border-gray-700 text-gray-300 transition" data-scenario="k8s_payment_gw_crashloop">
+        💥 3. K8s Alpine CrashLoop
+      </button>
+      <button class="scenario-btn px-2.5 py-1 rounded bg-gray-800 hover:bg-cyan-900/40 hover:text-cyan-300 border border-gray-700 text-gray-300 transition" data-scenario="redis_sentinel_split_brain">
+        🔄 4. Redis Replica Desync
+      </button>
+      <button class="scenario-btn px-2.5 py-1 rounded bg-amber-950/60 hover:bg-amber-900/80 border border-amber-700 text-amber-300 transition font-medium" data-scenario="novel_rabbitmq_poison_pill">
+        ✨ 5. Novel RabbitMQ Outage (Learn Live)
+      </button>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <button id="btn-reset-memory" title="Reset memories back to seed state" class="text-xs px-2.5 py-1 rounded bg-red-950/50 hover:bg-red-900/70 border border-red-800 text-red-300 transition flex items-center space-x-1">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        <span>Reset Bank</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Workstation Grid -->
+  <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Telemetry & Ingestion Console (4 cols) -->
+    <div class="lg:col-span-4 flex flex-col space-y-4">
+      <div class="bg-srecard border border-sreborder rounded-xl p-5 shadow-xl flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-sreborder">
+          <div class="flex items-center space-x-2">
+            <span class="h-2.5 w-2.5 rounded-full bg-red-500 animate-ping"></span>
+            <h2 class="font-bold text-sm tracking-wide uppercase text-white">Live Incident Ingestion</h2>
+          </div>
+          <span id="badge-severity" class="text-xs px-2 py-0.5 rounded font-mono font-bold bg-red-950 text-red-400 border border-red-800">P1 - CRITICAL</span>
+        </div>
+
+        <form id="incident-form" class="space-y-3 flex-1 flex flex-col">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-gray-400 uppercase font-mono mb-1">Microservice</label>
+              <input type="text" id="input-service" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none font-mono" value="kafka-ingress-cluster">
+            </div>
+            <div>
+              <label class="block text-[11px] text-gray-400 uppercase font-mono mb-1">Severity</label>
+              <select id="input-severity" class="w-full bg-sredark border border-gray-700 rounded px-2 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none font-mono">
+                <option value="P0">P0 - Outage Block</option>
+                <option value="P1" selected>P1 - Critical Degrade</option>
+                <option value="P2">P2 - Moderate Impact</option>
+                <option value="P3">P3 - Minor Warning</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] text-gray-400 uppercase font-mono mb-1">Firing Alert Name</label>
+            <input type="text" id="input-alert-name" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none font-mono" value="KafkaBrokerJVMHeapCriticallyHigh">
+          </div>
+
+          <div>
+            <label class="block text-[11px] text-gray-400 uppercase font-mono mb-1">Alert Summary & Impact</label>
+            <textarea id="input-summary" rows="2" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none">Kafka broker-02 JVM heap allocation reached 98.4%. Consumer lag on topic 'payment-events.v1' spiking over 52,000 msg/sec.</textarea>
+          </div>
+
+          <div class="flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] text-gray-400 uppercase font-mono">Raw Stack Trace & Telemetry</label>
+              <span class="text-[10px] text-gray-500 font-mono">Paste logs or load preset</span>
+            </div>
+            <textarea id="input-raw-logs" rows="7" class="w-full flex-1 bg-sredark border border-gray-700 rounded px-2.5 py-2 text-[11px] text-emerald-400 font-mono focus:border-cyan-500 focus:outline-none leading-relaxed">2026-09-28T17:44:12Z [kafka-broker-02] ERROR [KafkaServer id=2] Fatal error during KafkaServer startup: java.lang.OutOfMemoryError: Java heap space
+    at org.apache.kafka.common.record.DefaultRecordBatch.readRecords(DefaultRecordBatch.java:264)
+2026-09-28T17:44:20Z [kafka-broker-02] WARN [GroupCoordinator 2]: Preparing to rebalance group payment-ingest-group
+2026-09-28T17:44:35Z [ingress-api-gateway] ERROR 504 Gateway Timeout: failed to produce to topic 'payment-events.v1'</textarea>
+          </div>
+
+          <button type="submit" id="btn-investigate" class="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-cyan-500/25 transition transform active:scale-98">
+            <svg class="w-4 h-4 animate-spin hidden" id="spinner-investigate" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span id="btn-investigate-text">⚡ Trigger Dual-Agent Investigation</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Comparative Diagnosis & Institutional Intelligence (8 cols) -->
+    <div class="lg:col-span-8 flex flex-col space-y-6">
+
+      <!-- Side-by-Side Comparison Container -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Agent 1: Stateless Vanilla LLM -->
+        <div class="bg-srecard border border-red-900/40 rounded-xl p-4 flex flex-col shadow-lg">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-gray-800">
+            <div class="flex items-center space-x-2">
+              <span class="h-2 w-2 rounded-full bg-red-400"></span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-red-400">Stateless Agent</h3>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-900 font-mono">NO MEMORY</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs mb-3 bg-red-950/20 rounded p-2 border border-red-900/30">
+            <div>
+              <span class="text-gray-400 text-[11px] block">Confidence</span>
+              <span class="font-mono text-red-400 font-bold" id="vanilla-confidence">35.0%</span>
+            </div>
+            <div>
+              <span class="text-gray-400 text-[11px] block">Est. MTTR</span>
+              <span class="font-mono text-gray-300 font-medium" id="vanilla-mttr">45 - 90 min (Trial & Error)</span>
+            </div>
+          </div>
+
+          <div class="flex-1 bg-sredark/60 border border-gray-800 rounded-lg p-3 text-xs text-gray-300 overflow-y-auto max-h-[360px] leading-relaxed font-sans" id="vanilla-diagnosis">
+            <p class="text-gray-500 italic">Run investigation to view generic baseline diagnosis...</p>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-gray-800 text-[11px] text-gray-400 flex items-center justify-between">
+            <span class="text-red-400/90 font-mono">⚠️ May suggest dangerous reboots</span>
+            <span class="text-gray-500">Zero context</span>
+          </div>
+        </div>
+
+        <!-- Agent 2: ResqOps with Hindsight Memory -->
+        <div class="bg-srecard border border-cyan-800/60 rounded-xl p-4 flex flex-col shadow-lg shadow-cyan-950/20 ring-1 ring-cyan-500/20">
+          <div class="flex items-center justify-between pb-2 mb-3 border-b border-gray-800">
+            <div class="flex items-center space-x-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-300">ResqOps Copilot</h3>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono font-bold flex items-center gap-1">
+              <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              HINDSIGHT ACTIVE
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs mb-3 bg-cyan-950/30 rounded p-2 border border-cyan-900/40">
+            <div>
+              <span class="text-gray-400 text-[11px] block">Confidence</span>
+              <span class="font-mono text-cyan-400 font-bold" id="hindsight-confidence">98.4%</span>
+            </div>
+            <div>
+              <span class="text-gray-400 text-[11px] block">Est. MTTR</span>
+              <span class="font-mono text-emerald-400 font-bold" id="hindsight-mttr">90 sec (Direct Runbook)</span>
+            </div>
+          </div>
+
+          <div class="flex-1 bg-sredark/60 border border-cyan-950 rounded-lg p-3 text-xs text-gray-200 overflow-y-auto max-h-[360px] leading-relaxed" id="hindsight-diagnosis">
+            <p class="text-gray-500 italic">Run investigation to view Hindsight institutional memory recall...</p>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-gray-800 flex items-center justify-between text-[11px]">
+            <div class="flex items-center space-x-1" id="matched-incident-badges">
+              <span class="text-cyan-400 font-mono text-[10px]">Institutional match:</span>
+              <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-mono text-[10px] border border-cyan-800">INC-2024-1014</span>
+            </div>
+            <span class="text-emerald-400 font-medium font-mono">98% MTTR Reduction</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Interactive Tabs (Memory Inspector & Post-Mortem Retain) -->
+      <div class="bg-srecard border border-sreborder rounded-xl overflow-hidden shadow-xl">
+        <div class="flex items-center justify-between border-b border-sreborder bg-gray-900/50 px-4 pt-2">
+          <div class="flex space-x-2">
+            <button id="tab-btn-memories" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-cyan-400 border-b-2 border-cyan-400 transition flex items-center space-x-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              <span>Hindsight Memory Bank</span>
+              <span id="tab-count-badge" class="ml-1 px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-300 text-[10px] border border-cyan-800">4</span>
+            </button>
+            <button id="tab-btn-retain" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-200 border-b-2 border-transparent transition flex items-center space-x-1.5">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>Retain Post-Mortem (Live Learning)</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-gray-500 font-mono pb-2">
+            Bank: <span class="text-gray-300 font-bold">sre-production-incidents</span>
+          </div>
+        </div>
+
+        <!-- Tab 1: Memory Bank Explorer Content -->
+        <div id="tab-content-memories" class="p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="relative flex-1">
+              <input type="text" id="input-search-memory" placeholder="Search historical post-mortems, root causes, or error signatures..." class="w-full bg-sredark border border-gray-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none">
+              <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <button id="btn-refresh-memories" class="text-xs px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition">
+              Refresh
+            </button>
+          </div>
+
+          <div id="memory-cards-container" class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+            <!-- Dynamically populated memory cards -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Retain Post-Mortem & Learn Content -->
+        <div id="tab-content-retain" class="p-4 hidden space-y-4">
+          <div class="bg-emerald-950/20 border border-emerald-800/40 rounded-lg p-3 text-xs text-emerald-300 flex items-start space-x-2">
+            <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+              <strong>Demonstrate Learning Over Time:</strong>
+              When an engineer resolves an outage, ResqOps drafts a blameless post-mortem and commits it into Hindsight. Next time similar telemetry strikes, the agent immediately knows how to fix it!
+            </div>
+          </div>
+
+          <form id="retain-form" class="space-y-3">
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] text-gray-400 font-mono mb-1">Service</label>
+                <input type="text" id="retain-service" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white font-mono" value="notification-dispatcher">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-[11px] text-gray-400 font-mono mb-1">Incident Title</label>
+                <input type="text" id="retain-title" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="RabbitMQ Dead-Letter Queue Flooding & Worker OOM">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-gray-400 font-mono mb-1">Verified Resolution Notes (What actually fixed it)</label>
+              <textarea id="retain-resolution" rows="2" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" placeholder="Describe the fix (e.g. Added @JsonIgnoreProperties in Jackson mapper, replayed DLQ with rabbitmqctl shovel)">Configured Jackson ObjectMapper with @JsonIgnoreProperties(ignoreUnknown = true) to prevent unhandled schema property crashes. Replayed 850k DLQ messages via rabbitmqctl shovel and scaled workers to 12 replicas.</textarea>
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-gray-400 font-mono mb-1">Failed Attempts (Mistakes to avoid)</label>
+              <input type="text" id="retain-failed" class="w-full bg-sredark border border-gray-700 rounded px-2.5 py-1.5 text-xs text-white" value="Purging the entire RabbitMQ queue lost unacknowledged user emails. Restarting workers without the Jackson patch caused immediate crash loops.">
+            </div>
+
+            <button type="submit" id="btn-submit-postmortem" class="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition shadow-lg shadow-emerald-600/20">
+              <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+              <span>Synthesize Post-Mortem & Retain in Hindsight</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal (Cloud API Key Configuration) -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-srecard border border-sreborder rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button id="btn-close-settings" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="h-8 w-8 rounded-lg bg-cyan-950 border border-cyan-800 flex items-center justify-center text-cyan-400 font-bold">
+          ⚡
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Hindsight & LLM Configuration</h3>
+          <p class="text-xs text-gray-400">Connect to Vectorize Hindsight Cloud or use the local engine</p>
+        </div>
+      </div>
+
+      <div class="bg-cyan-950/30 border border-cyan-800/40 rounded-xl p-3 mb-4 text-xs text-cyan-300">
+        🎁 <strong>Hackathon Promo Code:</strong> Add code <span class="bg-cyan-900 px-1.5 py-0.5 rounded font-mono font-bold text-white">MEMHACK99</span> in the billing section of <a href="https://ui.hindsight.vectorize.io" target="_blank" class="underline text-white font-semibold">ui.hindsight.vectorize.io</a> for <strong>$50 free credits</strong>!
+      </div>
+
+      <form id="settings-form" class="space-y-4">
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Hindsight API Key</label>
+          <input type="password" id="set-hindsight-key" placeholder="Bearer / API Key from ui.hindsight.vectorize.io" class="w-full bg-sredark border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none">
+          <span class="text-[11px] text-gray-500">Leave blank to use the high-fidelity local persistent memory bank.</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-300 font-medium mb-1">Hindsight Base URL</label>
+            <input type="text" id="set-hindsight-url" value="https://api.hindsight.vectorize.io" class="w-full bg-sredark border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-300 font-medium mb-1">Memory Bank ID</label>
+            <input type="text" id="set-hindsight-bank" value="sre-production-incidents" class="w-full bg-sredark border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Groq API Key (Recommended LLM)</label>
+          <input type="password" id="set-groq-key" placeholder="gsk_..." class="w-full bg-sredark border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none">
+          <span class="text-[11px] text-gray-500">Get a free fast key at <a href="https://groq.com" target="_blank" class="underline text-gray-400">groq.com</a>. If omitted, built-in SRE engine runs automatically.</span>
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Google Gemini API Key (Optional)</label>
+          <input type="password" id="set-gemini-key" placeholder="AIzaSy..." class="w-full bg-sredark border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-settings" class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs">
+            Save & Reconnect
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="border-t border-sreborder px-6 py-2.5 text-center text-[11px] text-gray-500 bg-srecard flex items-center justify-between">
+    <span>ResqOps // Built for Hindsight Vectorize AI Hackathon</span>
+    <span class="font-mono">Memory Paradigm: Retain • Recall • Reflect</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
