@@ -1,6 +1,6 @@
 # ResqOps Demo Video Scripts
 
-This document provides two ready-to-record video scripts for your hackathon submission:
+This document provides two ready-to-record video scripts for demonstrating ResqOps:
 1. **Option A: The 60-Second Rapid Demo Hook** (High-energy, direct, perfect for judging rounds & social video)
 2. **Option B: The 3-Minute Comprehensive Technical Walkthrough** (Detailed architecture, code, and live learning demo)
 

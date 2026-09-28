@@ -1,6 +1,6 @@
 # ResqOps ⚡
 ### Autonomous SRE Incident Response & Institutional Post-Mortem Copilot
-**Built for the Vectorize Hindsight Hackathon: *AI Agents That Learn Using Hindsight***
+**Production AI Agent That Learns Using Vectorize Hindsight**
 
 [![Hindsight Powered](https://img.shields.io/badge/Memory-Vectorize%20Hindsight-06B6D4?style=for-the-badge)](https://hindsight.vectorize.io/)
 [![LLM](https://img.shields.io/badge/LLM-Groq%20%7C%20Llama%203.3-F59E0B?style=for-the-badge)](https://groq.com)
@@ -22,7 +22,7 @@ Production downtime costs organizations **$5,000 to $50,000 per minute**. When a
 
 ## 🌟 Key Features
 
-1. **Dual-Agent Comparative View (The Hackathon Star):**
+1. **Dual-Agent Comparative View:**
    * Side-by-side real-time split screen comparing a **Stateless Vanilla LLM** (35% confidence, generic trial-and-error advice) vs. **ResqOps with Hindsight Memory** (99.4% confidence, precise root cause, and verified bash commands).
 2. **Institutional Knowledge Preservation (`recall`):**
    * Recalls historical post-mortems based on error logs, stack traces, and service taxonomy.
@@ -128,7 +128,7 @@ projecthk/
 │   └── styles.css                  # Custom styling & typography
 ├── deliverables/
 │   ├── HINDSIGHT_ARCHITECTURE.md   # Deep dive on Hindsight memory implementation
-│   ├── HACKATHON_ARTICLE.md        # Technical submission blog post
+│   ├── TECHNICAL_ARTICLE.md        # Technical architectural deep dive & blog post
 │   ├── SOCIAL_MEDIA_POSTS.md       # Ready-to-publish LinkedIn & Twitter copy
 │   └── DEMO_VIDEO_SCRIPT.md        # 60s & 3m video recording scripts
 ├── requirements.txt                # Python dependencies
@@ -138,11 +138,11 @@ projecthk/
 
 ---
 
-## 🏆 Hackathon Deliverables Checklist
+## 🏆 Project Deliverables & Documentation
 
 - [x] **Working GitHub Codebase:** Full-stack FastAPI + Hindsight SDK + SRE Console
 - [x] **Hindsight Memory Architecture:** Documented in [deliverables/HINDSIGHT_ARCHITECTURE.md](deliverables/HINDSIGHT_ARCHITECTURE.md)
-- [x] **Submission Article:** Ready in [deliverables/HACKATHON_ARTICLE.md](deliverables/HACKATHON_ARTICLE.md)
+- [x] **Technical Article:** Ready in [deliverables/TECHNICAL_ARTICLE.md](deliverables/TECHNICAL_ARTICLE.md)
 - [x] **Social Media Deliverables:** Formatted for LinkedIn & Twitter in [deliverables/SOCIAL_MEDIA_POSTS.md](deliverables/SOCIAL_MEDIA_POSTS.md)
 - [x] **Demo Video Scripts:** 60-second & 3-minute scripts in [deliverables/DEMO_VIDEO_SCRIPT.md](deliverables/DEMO_VIDEO_SCRIPT.md)
 - [x] **Hindsight Cloud Credits Code:** Integrated (`MEMHACK99`) in UI, configs, and documentation
@@ -150,4 +150,4 @@ projecthk/
 ---
 
 ## 📜 License
-Distributed under the MIT License. Built with ❤️ for the Vectorize Hindsight Hackathon.
+Distributed under the MIT License. Built with ❤️ using Vectorize Hindsight.

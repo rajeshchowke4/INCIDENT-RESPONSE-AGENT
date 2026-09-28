@@ -1,6 +1,6 @@
 # Why AI Agents Without Memory Fail at 3 A.M.: Building ResqOps with Vectorize Hindsight
 
-*By Rajesh Chowke | Submitted for the Hindsight AI Hackathon 2026*
+*By Rajesh Chowke | Built with Vectorize Hindsight*
 
 ---
 

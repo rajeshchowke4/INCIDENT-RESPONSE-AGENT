@@ -3,7 +3,7 @@
 > **Project Name:** ResqOps  
 > **Core Technology:** Vectorize Hindsight Agent Memory Engine  
 > **Target Domain:** DevOps / Site Reliability Engineering (SRE) / Incident Response  
-> **Hackathon Track:** AI Agents That Learn Using Hindsight  
+> **Category:** AI Agents That Learn Using Persistent Memory  
 
 ---
 

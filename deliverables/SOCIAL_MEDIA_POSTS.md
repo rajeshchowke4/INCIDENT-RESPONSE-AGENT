@@ -13,7 +13,7 @@ If you've worked in SRE or DevOps, you know that restarting a locked database du
 
 Standard LLMs have amnesia. They don't know your infrastructure history, your past runbooks, or the post-mortems your senior engineers spent years writing.
 
-For the Vectorize Hindsight Hackathon, I built ⚡ ResqOps: an autonomous SRE Incident Response Copilot powered by Vectorize Hindsight.
+I built ⚡ ResqOps: an autonomous SRE Incident Response Copilot powered by Vectorize Hindsight.
 
 Instead of generic chatbot answers, ResqOps retains institutional memory of every past outage, failed troubleshooting step, and verified fix.
 
@@ -48,7 +48,7 @@ Here’s how we fixed this using @vectorize_io Hindsight 🧵👇
 
 2/6 Meet ⚡ ResqOps: The Autonomous SRE Incident Copilot with Long-Term Institutional Memory.
 
-Built for the Hindsight AI Hackathon, ResqOps turns buried post-mortems into an active defense shield for your infrastructure.
+ResqOps turns buried post-mortems into an active defense shield for your infrastructure.
 
 3/6 How it works under the hood:
 🔹 Ingests live telemetry & stack traces (K8s, Postgres, Kafka, Redis)

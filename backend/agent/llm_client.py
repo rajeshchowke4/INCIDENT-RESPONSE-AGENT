@@ -8,7 +8,7 @@ logger = logging.getLogger("llm_client")
 class LLMClient:
     """
     Unified LLM router supporting:
-    - Groq (Default recommended by hackathon brief - super fast)
+    - Groq (Super fast Llama 3.3 streaming inference)
     - Google Gemini
     - Deterministic SRE Engine (Zero-latency fallback when offline/no key)
     """
